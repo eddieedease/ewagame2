@@ -1,0 +1,7 @@
+{
+  "generator-phaser": {
+    "projectName": "ewastens",
+    "esVersion": 6,
+    "gameFolder": "game"
+  }
+}
