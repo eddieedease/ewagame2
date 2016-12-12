@@ -6,9 +6,9 @@ class Menu extends Phaser.State {
 
   create() {
     //add background image
-    this.background = this.game.add.sprite(0,0,'background');
-    this.background.height = this.game.world.height;
-    this.background.width = this.game.world.width;
+    this.background = this.game.add.sprite(0,0,'bgintro');
+    //this.background.height = this.game.world.height;
+    //this.background.width = this.game.world.width;
 
     //add some fancy transition effects
     this.ready = this.game.add.sprite(this.game.world.centerX,this.game.world.centerY,'text_ready');

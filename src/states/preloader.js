@@ -28,6 +28,8 @@ class Preloader extends Phaser.State {
 
         // NS game assets
         this.game.load.image('bg', 'assets/bg.png');
+        this.game.load.image('bgintro', 'assets/introbg.png');
+
         this.game.load.image('rope', 'assets/rope.png');
         this.game.load.image('contblauw', 'assets/contblauw.png');
         this.game.load.image('contgeel', 'assets/contyellow.png');
