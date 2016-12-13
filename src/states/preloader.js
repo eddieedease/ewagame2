@@ -41,6 +41,9 @@ class Preloader extends Phaser.State {
         this.game.load.spritesheet('colblauw', 'assets/colblauw.png', 150, 35);
         this.game.load.spritesheet('colgrijs', 'assets/colgrijs.png', 150, 35);
 
+        this.game.load.spritesheet('poof1', 'assets/poof1.png', 128, 128);
+        this.game.load.spritesheet('poof2', 'assets/poof2.png', 128, 128);
+
 
 
 

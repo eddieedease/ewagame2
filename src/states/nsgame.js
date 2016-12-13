@@ -12,17 +12,19 @@ class Game extends Phaser.State {
 
 
     create() {
-      // Setting up constants
-      this.SHOT_DELAY = 100; // milliseconds (10 bullets/3 seconds)
-      this.BULLET_SPEED = 800; // pixels/second
-      this.NUMBER_OF_BULLETS = 2;
-      this.AANTAL_BULLETS = 25;
-      this.GRAVITY = 560; // pixels/second/second
+        // Setting up constants
+        this.SHOT_DELAY = 100; // milliseconds (10 bullets/3 seconds)
+        this.BULLET_SPEED = 800; // pixels/second
+        this.NUMBER_OF_BULLETS = 3;
+        this.AANTAL_BULLETS = 1;
+        this.GRAVITY = 400; // pixels/second/second
+
         //NOTE TODO TODO easy quick
-      this.game.multiplay = true;
+        this.game.multiplay = true;
 
 
-
+        this.random1Old = 0;
+        this.random1New = 0;
 
         this.bulletPool1;
         this.bulletPool2;
@@ -75,25 +77,29 @@ class Game extends Phaser.State {
             this.colgrijs1.anchor.setTo(0.5, 0.5);
         }
 
+        this.currentobjsprite1 = this.add.sprite(100, 250, 'throwobjects');
+        this.currentobjsprite1.anchor.setTo(0.5, 0.5);
+        this.currentobjsprite1.rotation = 200;
+
 
         // TODO set up bulletgroups
         this.bulletPool1 = this.add.group();
         for (var i = 0; i < this.AANTAL_BULLETS; i++) {
             // TODO
-            var randomValue1 = this.game.rnd.integerInRange(0, 3);
-            console.log(randomValue1);
-
 
             var throwobject = this.add.sprite(0, 0, 'throwobjects');
-            throwobject.frame = randomValue1;
+
+            throwobject.frame = this.currandomp1;
             throwobject.anchor.setTo(0.5, 0.5);
             throwobject.scale.setTo(0.5, 0.5);
-            this.bulletPool1.add(throwobject);
+
             // Set its pivot point to the center of the bullet
             throwobject.anchor.setTo(0.5, 0.5);
             throwobject.scale.setTo(0.5, 0.5);
             // Enable physics on the bullet
             this.physics.enable(throwobject, Phaser.Physics.ARCADE);
+            throwobject.body.bounce.set(0.2);
+            this.bulletPool1.add(throwobject);
             // Set its initial state to "dead".
             throwobject.kill();
         }
@@ -101,6 +107,20 @@ class Game extends Phaser.State {
         // setting up gun
         this.gun1 = this.add.sprite(50, this.game.height - 215, 'throwobjects');
         this.gun1.frame = 0;
+        this.gun1.anchor.setTo(0.5, 0.5);
+        this.gun1.scale.setTo(0.7, 0.7);
+
+
+
+
+        // NOTE Below is not more p2
+        // Turn on gravity
+        this.physics.arcade.gravity.y = this.GRAVITY;
+
+
+        // create the inputs
+        this.cursors = this.game.input.keyboard.createCursorKeys();
+
 
 
 
@@ -131,6 +151,11 @@ class Game extends Phaser.State {
         this.contgeel.body.immovable = true;
         this.contgrijs.body.allowGravity = false;
         this.contgrijs.body.immovable = true;
+
+        this.contgroup = this.add.group();
+        this.contgroup.add(this.contblauw);
+        this.contgroup.add(this.contgeel);
+        this.contgroup.add(this.contgrijs);
 
 
 
@@ -168,9 +193,57 @@ class Game extends Phaser.State {
 
     update() {
 
+        //p1 control
+        if (this.cursors.up.isDown && this.gun1.rotation >= -1.30 && this.p1gameover === false) {
+            this.gun1.rotation = this.gun1.rotation - 0.02;
+        } else if (this.cursors.down.isDown && this.gun1.rotation < 0.6 && this.p1gameover === false) {
+            //console.log(player.x);
+            this.gun1.rotation = this.gun1.rotation + 0.02;
+        }
+
         if (this.p1shoot.isDown && this.p1gameover === false) {
             this.shootBullet1();
         }
+
+        // Rotate all living bullets to match their trajectory
+        this.bulletPool1.forEachAlive(function(bullet) {
+            bullet.rotation = Math.atan2(bullet.body.velocity.y, bullet.body.velocity.x);
+        }, this);
+
+        this.physics.arcade.collide(this.bulletPool1, this.contgroup, function(bullet, cont) {
+            // Create an explosion
+            //this.getExplosion(bullet.x, bullet.y);
+            // Kill the bullet
+            switch (cont.key) {
+                case "contblauw":
+                    if (this.currenttargetp1 === 0) {
+                        console.log("1");
+
+                        this.poof1 = this.add.sprite(cont.x, cont.y, 'poof1');
+                        this.poof1.anchor.setTo(0.5, 0.5);
+                        var animation = this.poof1.animations.add('poof1', [0, 1, 2, 3], 30, false);
+                        animation.killOnComplete = true;
+                        //this.poof1.kill();
+
+                        bullet.kill();
+                    }
+                    break;
+                case "contgeel":
+                    if (this.currenttargetp1 === 1) {
+                        console.log("2");
+                        bullet.kill();
+                    }
+                    break;
+                case "contgrijs":
+                    if (this.currenttargetp1 === 2) {
+                        console.log("3");
+                        bullet.kill();
+                    }
+
+                    break;
+            }
+
+        }, null, this);
         //this.countdownText.setText((this.endGameTimer.duration / 1000).toFixed(1));
     }
 
@@ -179,18 +252,30 @@ class Game extends Phaser.State {
         if (this.time.now - this.lastBulletShotAt < this.SHOT_DELAY) return;
         this.lastBulletShotAt = this.time.now;
 
+
+
+
         // Get a dead bullet from the pool
         var bullet = this.bulletPool1.getFirstDead();
-
         // If there aren't any bullets available then don't shoot
         if (bullet === null || bullet === undefined) return;
 
+        this.random1New = this.game.rnd.integerInRange(0, 3);
+
+
+        this.currentobjsprite1.frame = this.random1New;
         // Revive the bullet
         // This makes the bullet "alive"
+
+
         bullet.revive();
+        bullet.frame = this.random1Old;
+        this.currenttargetp1 = this.random1Old;
+
+        this.random1Old = this.random1New;
 
         // Bullets should kill themselves when they leave the world.
-        // Phaser takes care of this for me by setting this flag
+        // Phaser takes cBre of this for me by setting this flag
         // but you can do it yourself by killing the bullet if
         // its x,y coordinates are outside of the world.
         bullet.checkWorldBounds = true;
